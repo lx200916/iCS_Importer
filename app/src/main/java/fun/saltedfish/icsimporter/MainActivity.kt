@@ -10,6 +10,7 @@ import android.net.MailTo
 import android.net.ParseException
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcelable
 import android.provider.CalendarContract
 import android.text.TextUtils
 import android.text.format.DateUtils
@@ -71,8 +72,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private lateinit var mCalendar: net.fortuna.ical4j.model.Calendar
     private val ONE_DAY = createDuration("P1D")
     private val ZERO_SECONDS = createDuration("PT0S")
-    private lateinit var adapter: ArrayAdapter<Cal>;
-    private var calId = -1L;
+    private lateinit var adapter: ArrayAdapter<Cal>
+    private var calId = -1L
     private var Duplicate_Replace = false
     var mUidMs = 0L
     val msharedpreferences by lazy {
@@ -128,13 +129,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 //                TODO("Not yet implemented")
                 if (p2 == 0) {
                     CaltextField.visibility = View.VISIBLE
-                    outlinedButton_del.visibility=View.GONE
+                    outlinedButton_del.visibility = View.GONE
                     return
                 } else {
                     CaltextField.visibility = View.GONE
-                    outlinedButton_del.visibility=View.VISIBLE
+                    outlinedButton_del.visibility = View.VISIBLE
 
-                    calId = adapter.getItem(p2 )?.id ?: -1L
+                    calId = adapter.getItem(p2)?.id ?: -1L
 
                 }
 
@@ -148,18 +149,18 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         })
         adapter.setDropDownViewResource(R.layout.list_item)
-        planets_spinner.getSpinner().setAdapter(adapter)
+        planets_spinner.getSpinner().adapter = adapter
         main_card_status.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
-            intent.setType("text/calendar")
+            intent.type = "text/calendar"
 //            intent.type=""
             startActivityForResult(intent, 1)
         }
         main_card_status.setOnLongClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
-            intent.setType("text/calendar")
+            intent.type = "text/calendar"
 //            intent.type=""
             startActivityForResult(intent, 1)
             return@setOnLongClickListener true
@@ -183,13 +184,13 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                         .show()
                     return@setOnClickListener
                 } else {
-                    isInsert=true
+                    isInsert = true
                     runInsert()
                 }
 
 
-            }else{
-                isInsert=true
+            } else {
+                isInsert = true
                 runInsert()
             }
         }
@@ -217,13 +218,25 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 //                }
 
 
-            }else{
-                isInsert=false
+            } else {
+                isInsert = false
                 runInsert()
             }
         }
         choice_1.setOnCheckedChangeListener { group, checkedId ->
             Duplicate_Replace = checkedId == R.id.dup_2
+        }
+        val action = intent.action
+        if (Intent.ACTION_VIEW == action) {
+            val uri: Uri = intent.data ?: return
+            buildiCS(it = uri)
+
+        }
+        if (Intent.ACTION_SEND == action) {
+            (intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri)?.let {
+                buildiCS(it)
+
+            }
         }
 //        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
 //
@@ -294,7 +307,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     if (cursor == null || cursor.count == 0) {
                         return
                     }
-                    val lists: MutableList<Cal> = mutableListOf();
+                    val lists: MutableList<Cal> = mutableListOf()
                     while (cursor.moveToNext()) {
                         print(cursor)
                         print(cursor.getString(4))
@@ -333,9 +346,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     fun runInsert() {
-        running_view.visibility=View.VISIBLE
-        card_options.visibility=View.GONE
-        running_title.text="正在导入"
+        running_view.visibility = View.VISIBLE
+        card_options.visibility = View.GONE
+        running_title.text = "正在导入"
         launch {
             var numDups = 0
             var numDel = 0
@@ -357,23 +370,23 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 var mustDelete = isInsert.not()
                 if (!mustDelete) {
                     cur = query(contentResolver, c)
-                    while (isInsert  && cur != null && cur.moveToNext()) {
-                        if(Duplicate_Replace)
-                        mustDelete = cur.getLong(EVENT_QUERY_CALENDAR_ID_COL) == calId
-                        else{
-                            mustDelete=true
+                    while (isInsert && cur != null && cur.moveToNext()) {
+                        if (Duplicate_Replace)
+                            mustDelete = cur.getLong(EVENT_QUERY_CALENDAR_ID_COL) == calId
+                        else {
+                            mustDelete = true
                         }
                     }
 
                     if (mustDelete) {
                         numDups++
                         if (!Duplicate_Replace) {
-                            Log.i(TAG, "Avoiding inserting a duplicate event");
+                            Log.i(TAG, "Avoiding inserting a duplicate event")
 
-                            cur?.close();
-                            continue;
+                            cur?.close()
+                            continue
                         }
-                        cur?.moveToPosition(-1); // Rewind for use below
+                        cur?.moveToPosition(-1) // Rewind for use below
                     }
                 }
                 if (mustDelete) {
@@ -381,7 +394,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     while (cur != null && cur.moveToNext()) {
                         val rowCalendarId =
                             cur.getLong(EVENT_QUERY_CALENDAR_ID_COL)
-                        if ((Duplicate_Replace||!isInsert)
+                        if ((Duplicate_Replace || !isInsert)
                             && rowCalendarId != calId
                         ) {
                             Log.i(
@@ -445,14 +458,14 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
 
             }
-            running_title.text="导入成功"
+            running_title.text = "导入成功"
 
-            add_count.visibility=View.VISIBLE
-            if (isInsert){
-                dup_count.visibility=View.VISIBLE
+            add_count.visibility = View.VISIBLE
+            if (isInsert) {
+                dup_count.visibility = View.VISIBLE
             }
-            add_count.text=if (isInsert) "已增加 %d 项".format(numIns) else "已删除 %d 项".format(numDel)
-            dup_count.text="有 %d 项重复".format(numDups)
+            add_count.text = if (isInsert) "已增加 %d 项".format(numIns) else "已删除 %d 项".format(numDel)
+            dup_count.text = "有 %d 项重复".format(numDups)
 
         }
     }
@@ -464,15 +477,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         type: String
     ): Uri? {
 
-        Log.d(TAG, "Inserting " + type + " values: " + c);
-        val result = resolver.insert(uri, c);
+        Log.d(TAG, "Inserting " + type + " values: " + c)
+        val result = resolver.insert(uri, c)
         if (result == null) {
-            Log.e(TAG, "failed to insert " + type);
+            Log.e(TAG, "failed to insert " + type)
 
-            Log.e(TAG, "failed " + type + " values: " + c); // Not already logged, dump now
+            Log.e(TAG, "failed " + type + " values: " + c) // Not already logged, dump now
         } else
-            Log.d(TAG, "Insert " + type + " returned " + result.toString());
-        return result;
+            Log.d(TAG, "Insert " + type + " returned " + result.toString())
+        return result
     }
 
     fun generateUid(): String {
@@ -489,6 +502,74 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         return uid
     }
 
+    fun buildiCS(it: Uri) {
+        val file: InputStream?
+        try {
+            if (it.scheme == "file") {
+                MaterialAlertDialogBuilder(this).setTitle("使用了File:// URI")
+                    .setMessage("获取到了File:// URI,这项特性已经出于安全性考量在Android 6.0时代废除.\n读取File:// URI需要获取外置存储卡的完全访问权限,这违反了 Android 隐私管理思想,因此本程序不做适配.\n请更换打开/分享请求的发起应用.这些应用多数已经过时，靠低API兼容性苟延残喘，如Flyme 文件管理.")
+                    .setPositiveButton("OK") { dialog, which ->
+                        dialog.cancel()
+
+                    }.show()
+
+            }
+            file = contentResolver.openInputStream(it)
+            val document = DocumentFile.fromSingleUri(
+                this,
+                it
+            )
+
+            if (file == null || document == null || document.isDirectory || document.length() == 0L) {
+                Toast.makeText(this, "文件打开错误", Toast.LENGTH_LONG).show()
+                return
+            }
+
+
+            main_card_status_title.text =
+                document.name ?: ""
+            main_card_status_indicator.text = "%.2f KB".format(
+                document.length()
+                    .div(1024.0)
+                    ?: ""
+            )
+        } catch (e: java.lang.Exception) {
+            Toast.makeText(this, "文件打开错误", Toast.LENGTH_LONG).show()
+            return
+
+        }
+        try {
+            card_main_op.visibility = View.VISIBLE
+            running_title.text = "正在解析"
+            count_text.text = ""
+            card_options.visibility = View.GONE
+            run_progress.visibility = View.VISIBLE
+            run_progress.isIndeterminate = true
+            running_view.visibility = View.VISIBLE
+
+
+            launch {
+                mCalendar = get(file)
+                val n =
+                    mCalendar.getComponents<CalendarComponent>(VEvent.VEVENT).size
+                running_title.text = "导入设置"
+
+                count_text.text = "共 %d 条数据".format(n)
+                run_progress.isIndeterminate = false
+                run_progress.setProgress(0, true)
+                run_progress.max = n
+                running_view.visibility = View.GONE
+                card_options.visibility = View.VISIBLE
+            }
+
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
@@ -496,46 +577,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     data.data?.let {
 //it.toFile().name
-                        val file = contentResolver.openInputStream(it) ?: return
-                        main_card_status_title.text =
-                            DocumentFile.fromSingleUri(this, it)?.name ?: ""
-                        main_card_status_indicator.text = "%.2f KB".format(
-                            DocumentFile.fromSingleUri(
-                                this,
-                                it
-                            )?.length()
-                                ?.div(1024.0)
-                                ?: ""
-                        )
-
-                        try {
-                            card_main_op.visibility=View.VISIBLE
-                            running_title.text="正在解析"
-                            count_text.text=""
-                            card_options.visibility=View.GONE
-                            run_progress.visibility=View.VISIBLE
-                            run_progress.isIndeterminate=true
-                            running_view.visibility=View.VISIBLE
 
 
-                            launch {
-                                mCalendar = get(file)
-                                val n = mCalendar.getComponents<CalendarComponent>(VEvent.VEVENT).size
-                                running_title.text="导入设置"
-
-                                count_text.text = "共 %d 条数据".format(n)
-                                run_progress.isIndeterminate=false
-                                run_progress.setProgress(0, true)
-                                run_progress.max = n
-                                running_view.visibility=View.GONE
-                                card_options.visibility=View.VISIBLE
-                            }
-
-
-
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
+                        buildiCS(it)
 
 
                     }
@@ -543,9 +587,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
         }
     }
-    suspend fun get(ins: InputStream):Calendar = withContext(Dispatchers.IO) {
-       return@withContext mCalendarBuilder.build(ins)
+
+    suspend fun get(ins: InputStream): Calendar = withContext(Dispatchers.IO) {
+        return@withContext mCalendarBuilder.build(ins)
     }
+
     override fun onDestroy() {
         cancel()
         super.onDestroy()
@@ -783,11 +829,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             // FIXME: - Support for repeating alarms
             //        - Check the calendars max number of alarms
             if (t.dateTime != null) alarmMs = t.dateTime.time // Absolute
-            else if (t.duration != null&&java.time.Duration.from(t.duration).isNegative ) {
-                 t.duration
+            else if (t.duration != null && java.time.Duration.from(t.duration).isNegative) {
+                t.duration
                 val rel = t.getParameter(Parameter.RELATED) as? Related
                 if (rel != null && rel === Related.END) alarmStartMs = e.endDate.date.time
-                alarmMs = alarmStartMs -java.time.Duration.from(t.duration).toMillis()
+                alarmMs = alarmStartMs - java.time.Duration.from(t.duration).toMillis()
             } else {
                 continue
             }
