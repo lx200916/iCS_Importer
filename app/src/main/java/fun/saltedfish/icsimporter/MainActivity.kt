@@ -533,6 +533,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     .div(1024.0)
                     ?: ""
             )
+
         } catch (e: java.lang.Exception) {
             Toast.makeText(this, "文件打开错误", Toast.LENGTH_LONG).show()
             return
@@ -546,6 +547,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             run_progress.visibility = View.VISIBLE
             run_progress.isIndeterminate = true
             running_view.visibility = View.VISIBLE
+            main_card_status.setOnClickListener(null)
 
 
             launch {
@@ -576,9 +578,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             1 -> {
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     data.data?.let {
-//it.toFile().name
-
-
                         buildiCS(it)
 
 
