@@ -64,11 +64,12 @@ private const val PROJECTION_ID_INDEX: Int = 0
 private const val PROJECTION_ACCOUNT_NAME_INDEX: Int = 1
 private const val PROJECTION_DISPLAY_NAME_INDEX: Int = 2
 private const val PROJECTION_OWNER_ACCOUNT_INDEX: Int = 3
-
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     private val mCalendarBuilder: CalendarBuilder by lazy {
         CalendarBuilder()
     }
+
+    //    val Subtext= arrayOf(R.string.actionBar_subTitle_error)
     private lateinit var mCalendar: net.fortuna.ical4j.model.Calendar
     private val ONE_DAY = createDuration("P1D")
     private val ZERO_SECONDS = createDuration("PT0S")
@@ -85,7 +86,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-//        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(findViewById(R.id.toolbar))
         PermissionX.init(this)
             .permissions(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
             .explainReasonBeforeRequest()
@@ -100,15 +101,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             .request { allGranted, grantedList, deniedList ->
                 if (allGranted) {
-
                     getCalendar()
-                    Toast.makeText(this, "All permissions are granted", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "万事皆允", Toast.LENGTH_LONG).show()
                 } else {
                     Toast.makeText(
                         this,
                         "These permissions are denied: $deniedList",
                         Toast.LENGTH_LONG
                     ).show()
+                    toolbar.subtitle = getString(R.string.actionBar_subTitle_error)
                 }
             }
 
@@ -126,7 +127,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         )
         planets_spinner.setItemSelectedListener(object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-//                TODO("Not yet implemented")
                 if (p2 == 0) {
                     CaltextField.visibility = View.VISIBLE
                     outlinedButton_del.visibility = View.GONE
@@ -138,11 +138,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                     calId = adapter.getItem(p2)?.id ?: -1L
 
                 }
-
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
-//                TODO("Not yet implemented")
                 planets_spinner.setError("请选择目标日历")
 
             }
@@ -349,6 +347,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         running_view.visibility = View.VISIBLE
         card_options.visibility = View.GONE
         running_title.text = "正在导入"
+        toolbar.subtitle = getString(R.string.actionBar_subTitle_running)
+
         launch {
             var numDups = 0
             var numDel = 0
@@ -360,115 +360,131 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             cAlarm.put(
                 CalendarContractWrapper.Reminders.METHOD,
                 CalendarContractWrapper.Reminders.METHOD_ALERT
+
             )
-            for (event in events) {
-                run_progress.incrementProgressBy(1)
-                val e = event as VEvent
+            try {
 
-                val c = convertToDB(e, reminders, calId)
-                var cur: Cursor? = null
-                var mustDelete = isInsert.not()
-                if (!mustDelete) {
-                    cur = query(contentResolver, c)
-                    while (isInsert && cur != null && cur.moveToNext()) {
-                        if (Duplicate_Replace)
-                            mustDelete = cur.getLong(EVENT_QUERY_CALENDAR_ID_COL) == calId
-                        else {
-                            mustDelete = true
+
+                for (event in events) {
+                    run_progress.incrementProgressBy(1)
+                    val e = event as VEvent
+
+                    val c = convertToDB(e, reminders, calId)
+                    var cur: Cursor? = null
+                    var mustDelete = isInsert.not()
+                    if (!mustDelete) {
+                        cur = query(contentResolver, c)
+                        while (isInsert && cur != null && cur.moveToNext()) {
+                            if (Duplicate_Replace)
+                                mustDelete = cur.getLong(EVENT_QUERY_CALENDAR_ID_COL) == calId
+                            else {
+                                mustDelete = true
+                            }
+                        }
+
+                        if (mustDelete) {
+                            numDups++
+                            if (!Duplicate_Replace) {
+                                Log.i(TAG, "Avoiding inserting a duplicate event")
+
+                                cur?.close()
+                                continue
+                            }
+                            cur?.moveToPosition(-1) // Rewind for use below
                         }
                     }
-
                     if (mustDelete) {
-                        numDups++
-                        if (!Duplicate_Replace) {
-                            Log.i(TAG, "Avoiding inserting a duplicate event")
-
-                            cur?.close()
-                            continue
-                        }
-                        cur?.moveToPosition(-1) // Rewind for use below
-                    }
-                }
-                if (mustDelete) {
-                    if (cur == null) cur = query(contentResolver, c)
-                    while (cur != null && cur.moveToNext()) {
-                        val rowCalendarId =
-                            cur.getLong(EVENT_QUERY_CALENDAR_ID_COL)
-                        if ((Duplicate_Replace || !isInsert)
-                            && rowCalendarId != calId
-                        ) {
-                            Log.i(
-                                TAG,
-                                "Avoiding deleting duplicate event in calendar $rowCalendarId"
-                            )
-                            continue  // Not in the destination calendar
-                        }
-                        val id =
-                            cur.getString(EVENT_QUERY_ID_COL)
-                        val eventUri = Uri.withAppendedPath(
-                            CalendarContractWrapper.Events.CONTENT_URI,
-                            id
-                        )
-                        numDel += contentResolver.delete(eventUri, null, null)
-                        val where: String =
-                            CalendarContractWrapper.Reminders.EVENT_ID.toString() + "=?"
-                        contentResolver.delete(
-                            CalendarContractWrapper.Reminders.CONTENT_URI, where, arrayOf(
+                        if (cur == null) cur = query(contentResolver, c)
+                        while (cur != null && cur.moveToNext()) {
+                            val rowCalendarId =
+                                cur.getLong(EVENT_QUERY_CALENDAR_ID_COL)
+                            if ((Duplicate_Replace || !isInsert)
+                                && rowCalendarId != calId
+                            ) {
+                                Log.i(
+                                    TAG,
+                                    "Avoiding deleting duplicate event in calendar $rowCalendarId"
+                                )
+                                continue  // Not in the destination calendar
+                            }
+                            val id =
+                                cur.getString(EVENT_QUERY_ID_COL)
+                            val eventUri = Uri.withAppendedPath(
+                                CalendarContractWrapper.Events.CONTENT_URI,
                                 id
                             )
-                        )
+                            numDel += contentResolver.delete(eventUri, null, null)
+                            val where: String =
+                                CalendarContractWrapper.Reminders.EVENT_ID.toString() + "=?"
+                            contentResolver.delete(
+                                CalendarContractWrapper.Reminders.CONTENT_URI, where, arrayOf(
+                                    id
+                                )
+                            )
 
+                        }
                     }
-                }
-                cur?.close()
-                if (isInsert.not()) continue
-                if (CalendarContractWrapper.Events.UID_2445 != null && !c.containsKey(
-                        CalendarContractWrapper.Events.UID_2445
-                    )
-                ) {
-                    // Create a UID for this event to use. We create it here so if
-                    // exported multiple times it will always have the same id.
-                    c.put(CalendarContractWrapper.Events.UID_2445, generateUid())
-                }
+                    cur?.close()
+                    if (isInsert.not()) continue
+                    if (CalendarContractWrapper.Events.UID_2445 != null && !c.containsKey(
+                            CalendarContractWrapper.Events.UID_2445
+                        )
+                    ) {
+                        // Create a UID for this event to use. We create it here so if
+                        // exported multiple times it will always have the same id.
+                        c.put(CalendarContractWrapper.Events.UID_2445, generateUid())
+                    }
 
-                c.put(CalendarContractWrapper.Events.CALENDAR_ID, calId)
+                    c.put(CalendarContractWrapper.Events.CALENDAR_ID, calId)
 
 
-                val uri: Uri = insertAndLog(
-                    contentResolver,
-                    CalendarContractWrapper.Events.CONTENT_URI,
-                    c,
-                    "Event"
-                )
-                    ?: continue
-
-                val id = uri.lastPathSegment!!.toLong()
-
-                for (time in reminders) {
-                    cAlarm.put(CalendarContractWrapper.Reminders.EVENT_ID, id)
-                    cAlarm.put(CalendarContractWrapper.Reminders.MINUTES, time)
-                    insertAndLog(
+                    val uri: Uri = insertAndLog(
                         contentResolver,
-                        CalendarContractWrapper.Reminders.CONTENT_URI,
-                        cAlarm,
-                        "Reminder"
+                        CalendarContractWrapper.Events.CONTENT_URI,
+                        c,
+                        "Event"
                     )
+                        ?: continue
+
+                    val id = uri.lastPathSegment!!.toLong()
+
+                    for (time in reminders) {
+                        cAlarm.put(CalendarContractWrapper.Reminders.EVENT_ID, id)
+                        cAlarm.put(CalendarContractWrapper.Reminders.MINUTES, time)
+                        insertAndLog(
+                            contentResolver,
+                            CalendarContractWrapper.Reminders.CONTENT_URI,
+                            cAlarm,
+                            "Reminder"
+                        )
+                    }
+                    numIns++
+
+
                 }
-                numIns++
+                running_title.text = "导入成功"
+                toolbar?.subtitle = getString(R.string.actionBar_subTitle_sus)
 
+                add_count.visibility = View.VISIBLE
+                if (isInsert) {
+                    dup_count.visibility = View.VISIBLE
+                }
+                add_count.text =
+                    if (isInsert) "已增加 %d 项".format(numIns) else "已删除 %d 项".format(numDel)
+                dup_count.text = "有 %d 项重复".format(numDups)
 
+            } catch (e: java.lang.Exception) {
+                Log.e("error", e.localizedMessage.toString())
+                e.printStackTrace()
+                Toast.makeText(this@MainActivity, e.localizedMessage, Toast.LENGTH_LONG).show()
+
+                toolbar?.subtitle = getString(R.string.actionBar_subTitle_fail)
+                running_title.text = "导入失败"
             }
-            running_title.text = "导入成功"
-
-            add_count.visibility = View.VISIBLE
-            if (isInsert) {
-                dup_count.visibility = View.VISIBLE
-            }
-            add_count.text = if (isInsert) "已增加 %d 项".format(numIns) else "已删除 %d 项".format(numDel)
-            dup_count.text = "有 %d 项重复".format(numDups)
 
         }
     }
+
 
     private fun insertAndLog(
         resolver: ContentResolver,
@@ -522,6 +538,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
             if (file == null || document == null || document.isDirectory || document.length() == 0L) {
                 Toast.makeText(this, "文件打开错误", Toast.LENGTH_LONG).show()
+                toolbar?.subtitle = getString(R.string.actionBar_subTitle_error)
+
                 return
             }
 
@@ -536,6 +554,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         } catch (e: java.lang.Exception) {
             Toast.makeText(this, "文件打开错误", Toast.LENGTH_LONG).show()
+            toolbar?.subtitle = getString(R.string.actionBar_subTitle_error)
+
             return
 
         }
@@ -548,6 +568,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             run_progress.isIndeterminate = true
             running_view.visibility = View.VISIBLE
             main_card_status.setOnClickListener(null)
+            toolbar?.subtitle = getString(R.string.actionBar_subTitle_selected)
+
 
 
             launch {
@@ -687,7 +709,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     }
 
-    suspend fun convertToDB(
+    fun convertToDB(
         e: VEvent,
         reminders: MutableList<Int>, calendarId: Long
     ): ContentValues {
@@ -829,14 +851,15 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             //        - Check the calendars max number of alarms
             if (t.dateTime != null) alarmMs = t.dateTime.time // Absolute
             else if (t.duration != null && java.time.Duration.from(t.duration).isNegative) {
-                t.duration
+
                 val rel = t.getParameter(Parameter.RELATED) as? Related
                 if (rel != null && rel === Related.END) alarmStartMs = e.endDate.date.time
-                alarmMs = alarmStartMs - java.time.Duration.from(t.duration).toMillis()
+                alarmMs = alarmStartMs + java.time.Duration.from(t.duration).toMillis()
             } else {
                 continue
             }
             val reminder = ((startMs - alarmMs) / DateUtils.MINUTE_IN_MILLIS).toInt()
+
             if (reminder >= 0 && !reminders.contains(reminder)) reminders.add(reminder)
         }
         if (reminders.size > 0) c.put(CalendarContractWrapper.Events.HAS_ALARM, 1)
@@ -851,37 +874,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
             R.id.action_settings -> {
-                PermissionX.init(this)
-                    .permissions(
-                        Manifest.permission.READ_CALENDAR,
-                        Manifest.permission.WRITE_CALENDAR
-                    )
-                    .explainReasonBeforeRequest()
-                    .onExplainRequestReason { scope, deniedList ->
-                        scope.showRequestReasonDialog(
-                            deniedList,
-                            "需要权限读取日历列表/写入日程,否则程序无法工作.",
-                            "OK",
-                            "Cancel"
-                        )
-                    }
-                    .request { allGranted, grantedList, deniedList ->
-                        if (allGranted) {
+                about_card.visibility = View.VISIBLE
+                toolbar.subtitle = getString(R.string.actionBar_subTitle_about)
 
-                            getCalendar()
-                            Toast.makeText(
-                                this,
-                                "All permissions are granted",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        } else {
-                            Toast.makeText(
-                                this,
-                                "These permissions are denied: $deniedList",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
 
             }
             else -> super.onOptionsItemSelected(item)

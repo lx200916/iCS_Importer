@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">iCS Importer</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">About</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -11,4 +11,14 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="cal_create_error_title">新建日历错误</string>
     <string name="cal_create_error_msg">请检查权限或使用现有日历.</string>
+    <string name="actionBar_subTitle">Over the mountains,mountains.</string>
+    <string name="actionBar_subTitle_error">世间无限丹青手 一片伤心画不成</string>
+    <string name="actionBar_subTitle_selected">我心素已闲 清川澹如此</string>
+    <string name="actionBar_subTitle_running">把酒祝东风 且共从容</string>
+    <string name="actionBar_subTitle_sus">曲终人不见 江上数峰青</string>
+    <string name="actionBar_subTitle_fail">大都好物不坚牢 彩云易散琉璃脆</string>
+    <string name="actionBar_subTitle_about">满天都是星星 好像一场冻结了的大雨</string>
+    <string name="email">saltedfish@saltedfish.fun</string>
+    <string name="Author">咸的鱼</string>
+
 </resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="actionBar_subTitle">满天都是星星 好像一场冻结了的大雨</string>
+    <string name="actionBar_subTitle_error">我常常永恒地回复到永恒反复中去</string>
+    <string name="actionBar_subTitle_selected">生活 是一种永恒沉重的努力</string>
+    <string name="actionBar_subTitle_running">玻璃晴朗 橘子辉煌</string>
+    <string name="actionBar_subTitle_sus">在那做梦人的梦中 被梦见的人醒了</string>
+    <string name="actionBar_subTitle_fail">归根结底 太阳还是温暖着我们的身骨</string>
+    <string name="actionBar_subTitle_about">恍不觉梦 流离之人 追逐幻影</string>
+
+</resources>

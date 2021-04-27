@@ -30,6 +30,8 @@
                 app:layout_constraintVertical_bias="0.0"
                 app:popupTheme="@style/Theme.ICSImporter.PopupOverlay"
                 app:title="@string/app_name"
+                app:subtitle="@string/actionBar_subTitle"
+                app:subtitleTextAppearance="@style/ActionBarSubTitle"
                 app:titleTextColor="?attr/colorOnSecondary" />
 
             <androidx.cardview.widget.CardView
@@ -162,6 +164,7 @@
                             android:layout_marginTop="0sp"
                             android:layout_marginRight="5sp"
                             android:hint="新建日历名称"
+
                             android:importantForAutofill="no"
                             android:visibility="visible"
                             app:boxStrokeColor="?attr/colorOnSecondary"
@@ -173,7 +176,8 @@
                             <com.google.android.material.textfield.TextInputEditText
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:importantForAutofill="no" />
+                                android:importantForAutofill="no"
+                                android:singleLine="true" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -347,6 +351,102 @@
                             android:layout_marginBottom="20sp" />
 
                     </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/about_card"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="invisible"
+                app:cardElevation="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/card_main_op"
+
+
+                >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Title, secondary and supporting text -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="关于"
+                        android:textAppearance="?attr/textAppearanceHeadline6"
+
+                        />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_margin="8dp"
+                            app:srcCompat="@drawable/user_nocircle"
+                            app:tint="?attr/colorOnSecondary" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="1dp"
+                            android:text="@string/Author"
+                            android:textAllCaps="false"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Widget.Switch"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_margin="8dp"
+                            app:srcCompat="@drawable/email"
+
+                            app:tint="?attr/colorOnSecondary" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="1dp"
+                            android:text="@string/email"
+                            android:textAllCaps="false"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Widget.Switch"
+                            android:textSize="18sp" />
+                    </LinearLayout>
+                    <!--        <TextView-->
+                    <!--            android:layout_width="wrap_content"-->
+                    <!--            android:layout_height="wrap_content"-->
+                    <!--            android:layout_marginTop="16dp"-->
+                    <!--            android:text="@string/supporting_text"-->
+                    <!--            android:textAppearance="?attr/textAppearanceBody2"-->
+                    <!--            android:textColor="?android:attr/textColorSecondary"-->
+                    <!--            />-->
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </androidx.constraintlayout.widget.ConstraintLayout>

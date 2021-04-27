@@ -18,10 +18,21 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="ActionBarSubTitle" parent="android:Widget.TextView">
+
+        <item name="android:fontFamily">sans-serif-light</item>
+
+        <item name="android:textColor">?attr/colorOnSecondary</item>
+
+        <item name="android:textSize">12sp</item>
+
+    </style>
+
     <style name="Theme.ICSImporter.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+
     <style name="Widget.MyApp.Chip.Choice" parent="Widget.MaterialComponents.Chip.Choice">
 
         <item name="materialThemeOverlay">@style/ThemeOverlay.MyApp.Chip.Choice</item>
